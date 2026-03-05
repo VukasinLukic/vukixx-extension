@@ -1,0 +1,126 @@
+/* ── Vukixx Save Button ── */
+/* All classes prefixed with vukixx- to avoid collisions */
+
+.vukixx-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  line-height: 1;
+  z-index: 10000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.vukixx-save-btn:hover {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+.vukixx-save-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.vukixx-save-btn__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+}
+
+.vukixx-save-btn__label {
+  display: inline;
+}
+
+.vukixx-saving {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.vukixx-saved {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+.vukixx-error {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+
+/* Spin animation */
+@keyframes vukixx-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.vukixx-spin {
+  animation: vukixx-spin 1s linear infinite;
+}
+
+/* ── Inline button (on message bubbles) ── */
+
+.vukixx-inline-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0;
+  z-index: 10000;
+}
+
+/* Show on hover of parent */
+*:hover > .vukixx-inline-btn,
+.vukixx-inline-btn:hover,
+.vukixx-inline-btn:focus {
+  opacity: 1;
+}
+
+.vukixx-inline-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  color: #4f46e5;
+}
+
+.vukixx-inline-btn.vukixx-saved {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #10b981 !important;
+  opacity: 1;
+}
+
+.vukixx-inline-btn.vukixx-error {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #ef4444 !important;
+  opacity: 1;
+}
+
+.vukixx-inline-btn.vukixx-saving {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── Floating save button (near input area) ── */
+
+.vukixx-float-container {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10001;
+}

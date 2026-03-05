@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "VukixxExtension",
+  "version": "1.0.0",
+  "description": "Save prompts from ChatGPT, Claude, Midjourney, and Gemini to Vukixxx",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://chat.openai.com/*",
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
+    "https://www.midjourney.com/*",
+    "https://gemini.google.com/*"
+  ],
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
+      "js": ["chatgpt.js"],
+      "css": ["assets/styles.css"]
+    },
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["claude.js"],
+      "css": ["assets/styles.css"]
+    },
+    {
+      "matches": ["https://www.midjourney.com/*"],
+      "js": ["midjourney.js"],
+      "css": ["assets/styles.css"]
+    },
+    {
+      "matches": ["https://gemini.google.com/*"],
+      "js": ["gemini.js"],
+      "css": ["assets/styles.css"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/icon-16.png",
+      "48": "assets/icon-48.png",
+      "128": "assets/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icon-16.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
+  }
+}

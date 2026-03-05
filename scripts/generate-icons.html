@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Vukixxx Icons</title></head>
+<body>
+<h2>Right-click each icon below → Save Image As → save to src/assets/</h2>
+<p>icon-16.png:</p>
+<canvas id="c16" width="16" height="16"></canvas>
+<p>icon-48.png:</p>
+<canvas id="c48" width="48" height="48"></canvas>
+<p>icon-128.png:</p>
+<canvas id="c128" width="128" height="128"></canvas>
+
+<script>
+function drawIcon(canvas) {
+  const ctx = canvas.getContext('2d');
+  const s = canvas.width;
+  const r = s * 0.22; // corner radius
+
+  // Background gradient
+  const grad = ctx.createLinearGradient(0, 0, s, s);
+  grad.addColorStop(0, '#6366f1');
+  grad.addColorStop(1, '#8b5cf6');
+
+  // Rounded rect
+  ctx.beginPath();
+  ctx.roundRect(0, 0, s, s, r);
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Hexagon
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = Math.max(1, s * 0.03);
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  const cx = s / 2, cy = s / 2;
+  const hx = s * 0.25, hy = s * 0.19;
+
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - hy * 1.7);
+  ctx.lineTo(cx - hx, cy - hy * 0.85);
+  ctx.lineTo(cx - hx, cy + hy * 0.85);
+  ctx.lineTo(cx, cy + hy * 1.7);
+  ctx.lineTo(cx + hx, cy + hy * 0.85);
+  ctx.lineTo(cx + hx, cy - hy * 0.85);
+  ctx.closePath();
+  ctx.stroke();
+
+  // Plus sign
+  ctx.lineWidth = Math.max(1, s * 0.03);
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - hy);
+  ctx.lineTo(cx, cy + hy);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx - hx * 0.65, cy);
+  ctx.lineTo(cx + hx * 0.65, cy);
+  ctx.stroke();
+}
+
+['c16', 'c48', 'c128'].forEach(id => {
+  const canvas = document.getElementById(id);
+  drawIcon(canvas);
+  // Convert to image for easy saving
+  const img = new Image();
+  img.src = canvas.toDataURL('image/png');
+  canvas.parentNode.insertBefore(img, canvas.nextSibling);
+});
+</script>
+</body>
+</html>
