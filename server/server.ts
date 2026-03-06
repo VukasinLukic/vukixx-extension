@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { classifyWithGemini, classifyWithOllama } from './classifier';
-import { savePromptAsMarkdown, getRecentPrompts } from './storage';
+import { savePrompt, getRecentPrompts, getPromptById } from './storage';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3777');
@@ -35,8 +35,7 @@ app.post('/api/prompts', async (req, res) => {
       } else {
         classification = await classifyWithOllama(text, OLLAMA_URL);
       }
-    } catch (err) {
-      // Fallback to simple classification
+    } catch {
       classification = {
         title: text.substring(0, 60).replace(/\n/g, ' ').trim(),
         category: 'other',
@@ -47,8 +46,8 @@ app.post('/api/prompts', async (req, res) => {
     // Generate ID
     const id = `${source || 'manual'}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
-    // Save as .md
-    const record = await savePromptAsMarkdown(
+    // Save to Firestore
+    const record = await savePrompt(
       id,
       text,
       source || 'manual',
@@ -85,9 +84,24 @@ app.get('/api/prompts', async (req, res) => {
   }
 });
 
+// ── Get single prompt ──
+app.get('/api/prompts/:id', async (req, res) => {
+  try {
+    const prompt = await getPromptById(req.params.id);
+    if (!prompt) {
+      res.status(404).json({ error: 'Prompt not found' });
+      return;
+    }
+    res.json(prompt);
+  } catch (err) {
+    console.error('Error getting prompt:', err);
+    res.status(500).json({ error: 'Failed to get prompt' });
+  }
+});
+
 // ── Start server ──
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n  Vukixxx API Server running on http://0.0.0.0:${PORT}`);
   console.log(`  AI Provider: ${AI_PROVIDER}`);
-  console.log(`  Prompts dir: ${process.env.PROMPTS_DIR || './prompts'}\n`);
+  console.log(`  Storage: Firebase Firestore\n`);
 });
