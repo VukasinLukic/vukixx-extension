@@ -1,4 +1,4 @@
-/* ── Vukixx Save Button ── */
+/* ── Vukixx Save Button (Apple HIG Design) ── */
 /* All classes prefixed with vukixx- to avoid collisions */
 
 .vukixx-save-btn {
@@ -8,28 +8,30 @@
   padding: 6px 12px;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: #007aff;
   color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   white-space: nowrap;
   line-height: 1;
   z-index: 10000;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .vukixx-save-btn:hover {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+  background: #0056b3;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
   transform: translateY(-1px);
 }
 
 .vukixx-save-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .vukixx-save-btn__icon {
@@ -50,11 +52,13 @@
 }
 
 .vukixx-saved {
-  background: linear-gradient(135deg, #10b981, #059669) !important;
+  background: #34c759 !important;
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3) !important;
 }
 
 .vukixx-error {
-  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  background: #ff3b30 !important;
+  box-shadow: 0 2px 8px rgba(255, 59, 48, 0.3) !important;
 }
 
 /* Spin animation */
@@ -78,10 +82,10 @@
   padding: 0;
   border: none;
   border-radius: 6px;
-  background: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
+  background: rgba(0, 122, 255, 0.08);
+  color: #007aff;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   opacity: 0;
   z-index: 10000;
 }
@@ -94,19 +98,19 @@
 }
 
 .vukixx-inline-btn:hover {
-  background: rgba(99, 102, 241, 0.2);
-  color: #4f46e5;
+  background: rgba(0, 122, 255, 0.12);
+  color: #0056b3;
 }
 
 .vukixx-inline-btn.vukixx-saved {
-  background: rgba(16, 185, 129, 0.15) !important;
-  color: #10b981 !important;
+  background: rgba(52, 199, 89, 0.12) !important;
+  color: #34c759 !important;
   opacity: 1;
 }
 
 .vukixx-inline-btn.vukixx-error {
-  background: rgba(239, 68, 68, 0.15) !important;
-  color: #ef4444 !important;
+  background: rgba(255, 59, 48, 0.12) !important;
+  color: #ff3b30 !important;
   opacity: 1;
 }
 

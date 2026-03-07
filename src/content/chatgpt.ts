@@ -72,10 +72,16 @@ function init(): void {
   injectSaveButtonNearInput();
   injectSaveOnMessages();
 
+  // Debounce to avoid excessive calls
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
   // Observe DOM changes (SPA navigation, new messages)
   const observer = new MutationObserver(() => {
-    injectSaveButtonNearInput();
-    injectSaveOnMessages();
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      injectSaveButtonNearInput();
+      injectSaveOnMessages();
+    }, 100); // Wait 100ms after last change
   });
 
   observer.observe(document.body, {

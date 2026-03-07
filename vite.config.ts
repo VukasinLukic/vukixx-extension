@@ -14,6 +14,31 @@ function chromeExtensionPlugin() {
       // ── 1. Inline chunks into content scripts & service worker ──
       // Chrome content scripts can't use ES module imports
       if (existsSync(chunksDir)) {
+        // Helper: Extract top-level identifiers from code
+        function extractIdentifiers(code: string): Set<string> {
+          const identifiers = new Set<string>();
+          // Match: var/let/const/function declarations at top level
+          const patterns = [
+            /(?:^|;|\n)\s*(?:var|let|const)\s+(\w+)/g,
+            /(?:^|;|\n)\s*function\s+(\w+)/g,
+            /(?:^|;|\n)\s*class\s+(\w+)/g,
+          ];
+          for (const pattern of patterns) {
+            let match;
+            while ((match = pattern.exec(code)) !== null) {
+              identifiers.add(match[1]);
+            }
+          }
+          return identifiers;
+        }
+
+        // Helper: Rename identifier in code (simple word boundary replacement)
+        function renameIdentifier(code: string, oldName: string, newName: string): string {
+          // Use word boundaries to avoid partial matches
+          const regex = new RegExp(`\\b${oldName}\\b`, 'g');
+          return code.replace(regex, newName);
+        }
+
         // Parse each chunk: extract exports mapping and clean code
         const chunkData = new Map<string, { code: string; exports: Map<string, string> }>();
         for (const file of readdirSync(chunksDir)) {
@@ -45,6 +70,7 @@ function chromeExtensionPlugin() {
           if (!existsSync(entryPath)) continue;
 
           let code = readFileSync(entryPath, 'utf-8');
+          const entryIdentifiers = extractIdentifiers(code);
 
           for (const [chunkFile, { code: chunkCode, exports }] of chunkData) {
             const escaped = chunkFile.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -54,20 +80,50 @@ function chromeExtensionPlugin() {
             const importMatch = code.match(importRe);
             if (!importMatch) continue;
 
+            // Find conflicts between chunk and entry identifiers
+            const chunkIdentifiers = extractIdentifiers(chunkCode);
+            const conflicts = new Set<string>();
+            for (const id of chunkIdentifiers) {
+              if (entryIdentifiers.has(id)) {
+                conflicts.add(id);
+              }
+            }
+
+            // Rename conflicts in chunk code
+            let renamedChunkCode = chunkCode;
+            const renameMap = new Map<string, string>();
+            for (const conflictId of conflicts) {
+              // Generate unique name by prefixing with chunk_
+              let newName = `chunk_${conflictId}`;
+              let counter = 1;
+              while (chunkIdentifiers.has(newName) || entryIdentifiers.has(newName)) {
+                newName = `chunk_${conflictId}_${counter}`;
+                counter++;
+              }
+              renameMap.set(conflictId, newName);
+              renamedChunkCode = renameIdentifier(renamedChunkCode, conflictId, newName);
+            }
+
+            // Update exports map with renamed identifiers
+            const updatedExports = new Map<string, string>();
+            for (const [exportName, localName] of exports) {
+              updatedExports.set(exportName, renameMap.get(localName) || localName);
+            }
+
             // Build alias assignments for renamed imports
             let aliases = '';
             for (const part of importMatch[1].split(',')) {
               const asM = part.trim().match(/^(\w+)\s+as\s+(\w+)$/);
               const exportedName = asM ? asM[1] : part.trim();
               const localAlias = asM ? asM[2] : part.trim();
-              const chunkLocal = exports.get(exportedName);
+              const chunkLocal = updatedExports.get(exportedName);
               if (chunkLocal && chunkLocal !== localAlias) {
                 aliases += `const ${localAlias}=${chunkLocal};`;
               }
             }
 
             code = code.replace(importRe, '');
-            code = chunkCode + aliases + '\n' + code;
+            code = renamedChunkCode + aliases + '\n' + code;
           }
 
           writeFileSync(entryPath, code);
@@ -112,6 +168,7 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     target: 'esnext',
+    minify: 'esbuild',
     rollupOptions: {
       input: {
         'service-worker': resolve(__dirname, 'src/background/service-worker.ts'),
@@ -125,8 +182,14 @@ export default defineConfig({
         entryFileNames: '[name].js',
         chunkFileNames: 'chunks/[name]-[hash].js',
         assetFileNames: 'assets/[name][extname]',
+        // Disable variable name mangling to prevent conflicts when inlining chunks
+        minifyInternalExports: false,
       },
     },
+  },
+  esbuild: {
+    // Keep function/variable names to avoid conflicts
+    keepNames: true,
   },
   resolve: {
     alias: {

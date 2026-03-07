@@ -65,7 +65,7 @@ export interface ExtensionSettings {
 }
 
 export const DEFAULT_SETTINGS: ExtensionSettings = {
-  apiUrl: 'http://localhost:3777',
+  apiUrl: 'https://vukixx-server.onrender.com',
   enabled: true,
 };
 
