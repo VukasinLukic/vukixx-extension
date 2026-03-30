@@ -6,6 +6,10 @@ import {
   addToQueue,
   getQueue,
   removeFromQueue,
+  getCachedProjects,
+  setCachedProjects,
+  getCachedProfile,
+  setCachedProfile,
 } from '../shared/storage';
 import type { ExtensionMessage, SavedPrompt } from '../shared/types';
 
@@ -27,6 +31,12 @@ async function handleMessage(message: ExtensionMessage) {
       return handleCheckConnection();
     case 'RETRY_QUEUE':
       return handleRetryQueue();
+    case 'GET_PROJECTS':
+      return handleGetProjects();
+    case 'GET_PROFILE':
+      return handleGetProfile();
+    case 'SAVE_CLAUDE_LOG':
+      return handleSaveClaudeLog(message.payload);
     default:
       return { success: false, error: 'Unknown message type' };
   }
@@ -138,6 +148,43 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     }
   }
 });
+
+// ── Digital Twin handlers ──
+
+async function handleGetProjects() {
+  const settings = await getSettings();
+  const api = new VukixxAPI(settings.apiUrl);
+  try {
+    const projects = await api.getProjects();
+    await setCachedProjects(projects);
+    return projects;
+  } catch {
+    // Return cached if API fails
+    return getCachedProjects();
+  }
+}
+
+async function handleGetProfile() {
+  const settings = await getSettings();
+  const api = new VukixxAPI(settings.apiUrl);
+  try {
+    const profile = await api.getProfile();
+    if (profile) await setCachedProfile(profile);
+    return profile;
+  } catch {
+    return getCachedProfile();
+  }
+}
+
+async function handleSaveClaudeLog(payload: {
+  projectId: string;
+  summary: string;
+  outcome: 'success' | 'partial' | 'blocked' | 'info';
+}) {
+  const settings = await getSettings();
+  const api = new VukixxAPI(settings.apiUrl);
+  return api.saveClaudeLog(payload);
+}
 
 // ── Helpers ──
 function generateId(): string {

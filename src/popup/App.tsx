@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ManualSave } from './components/ManualSave';
 import { RecentSaves } from './components/RecentSaves';
+import { Projects } from './components/Projects';
 import { Settings } from './components/Settings';
 import { StatusBar } from './components/StatusBar';
-import type { SavedPrompt, ExtensionSettings } from '../shared/types';
+import type { SavedPrompt, ExtensionSettings, Project } from '../shared/types';
 import { DEFAULT_SETTINGS } from '../shared/types';
 
-type Tab = 'save' | 'recent' | 'settings';
+type Tab = 'save' | 'recent' | 'projects' | 'settings';
 
 export function App() {
   const [tab, setTab] = useState<Tab>('save');
   const [connected, setConnected] = useState<boolean | null>(null);
   const [queueCount, setQueueCount] = useState(0);
   const [recentSaves, setRecentSaves] = useState<SavedPrompt[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [settings, setSettings] = useState<ExtensionSettings>(DEFAULT_SETTINGS);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
@@ -21,7 +23,7 @@ export function App() {
     setTimeout(() => setToast(null), 2500);
   }, []);
 
-  // Load settings & check connection on mount
+  // Load settings, check connection, and fetch projects on mount
   useEffect(() => {
     chrome.storage.local.get(['settings', 'recentSaves', 'offlineQueue'], (result) => {
       if (result.settings) setSettings(result.settings);
@@ -32,6 +34,11 @@ export function App() {
     chrome.runtime.sendMessage({ type: 'CHECK_CONNECTION' }, (res) => {
       setConnected(res?.connected ?? false);
     });
+
+    // Fetch projects
+    chrome.runtime.sendMessage({ type: 'GET_PROJECTS' }, (res) => {
+      if (Array.isArray(res)) setProjects(res);
+    });
   }, []);
 
   const refreshRecent = useCallback(() => {
@@ -40,10 +47,20 @@ export function App() {
     });
   }, []);
 
+  const refreshProjects = useCallback(() => {
+    chrome.runtime.sendMessage({ type: 'GET_PROJECTS' }, (res) => {
+      if (Array.isArray(res)) setProjects(res);
+    });
+  }, []);
+
   const handleSaved = useCallback(() => {
     showToast('Prompt saved!', 'success');
     refreshRecent();
   }, [showToast, refreshRecent]);
+
+  const handleLogSaved = useCallback(() => {
+    showToast('Claude log saved!', 'success');
+  }, [showToast]);
 
   const handleSettingsSaved = useCallback((newSettings: ExtensionSettings) => {
     setSettings(newSettings);
@@ -52,7 +69,9 @@ export function App() {
     chrome.runtime.sendMessage({ type: 'CHECK_CONNECTION' }, (res) => {
       setConnected(res?.connected ?? false);
     });
-  }, [showToast]);
+    // Refresh projects with new URL
+    refreshProjects();
+  }, [showToast, refreshProjects]);
 
   return (
     <div className="vkx-popup">
@@ -75,13 +94,19 @@ export function App() {
           className={`vkx-tab ${tab === 'save' ? 'vkx-tab--active' : ''}`}
           onClick={() => setTab('save')}
         >
-          Save Prompt
+          Save
         </button>
         <button
           className={`vkx-tab ${tab === 'recent' ? 'vkx-tab--active' : ''}`}
           onClick={() => { setTab('recent'); refreshRecent(); }}
         >
           Recent
+        </button>
+        <button
+          className={`vkx-tab ${tab === 'projects' ? 'vkx-tab--active' : ''}`}
+          onClick={() => { setTab('projects'); refreshProjects(); }}
+        >
+          Projects
         </button>
         <button
           className={`vkx-tab ${tab === 'settings' ? 'vkx-tab--active' : ''}`}
@@ -93,8 +118,9 @@ export function App() {
 
       {/* Content */}
       <div className="vkx-content">
-        {tab === 'save' && <ManualSave onSaved={handleSaved} />}
+        {tab === 'save' && <ManualSave onSaved={handleSaved} projects={projects} />}
         {tab === 'recent' && <RecentSaves saves={recentSaves} />}
+        {tab === 'projects' && <Projects projects={projects} onLogSaved={handleLogSaved} />}
         {tab === 'settings' && <Settings settings={settings} onSaved={handleSettingsSaved} />}
       </div>
 

@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import type { PromptSource } from '../../shared/types';
+import type { PromptSource, Project } from '../../shared/types';
 
 interface ManualSaveProps {
   onSaved: () => void;
+  projects: Project[];
 }
 
-export function ManualSave({ onSaved }: ManualSaveProps) {
+export function ManualSave({ onSaved, projects }: ManualSaveProps) {
   const [text, setText] = useState('');
   const [source, setSource] = useState<PromptSource>('manual');
+  const [projectId, setProjectId] = useState('');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -24,6 +26,7 @@ export function ManualSave({ onSaved }: ManualSaveProps) {
               source,
               url: '',
               timestamp: new Date().toISOString(),
+              ...(projectId ? { projectId } : {}),
             },
           },
           resolve
@@ -68,6 +71,18 @@ export function ManualSave({ onSaved }: ManualSaveProps) {
           <option value="midjourney">Midjourney</option>
         </select>
       </div>
+
+      {projects.length > 0 && (
+        <div className="vkx-manual__source">
+          <label>Project:</label>
+          <select value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+            <option value="">— none —</option>
+            {projects.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: '8px' }}>
         <button

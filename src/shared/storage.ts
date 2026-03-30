@@ -48,3 +48,25 @@ export async function removeFromQueue(id: string): Promise<void> {
 export async function clearQueue(): Promise<void> {
   await chrome.storage.local.set({ offlineQueue: [] });
 }
+
+// ── Digital Twin cache ──
+
+import type { Project, UserProfile } from './types';
+
+export async function getCachedProjects(): Promise<Project[]> {
+  const result = await chrome.storage.local.get('cachedProjects');
+  return result.cachedProjects ?? [];
+}
+
+export async function setCachedProjects(projects: Project[]): Promise<void> {
+  await chrome.storage.local.set({ cachedProjects: projects });
+}
+
+export async function getCachedProfile(): Promise<UserProfile | null> {
+  const result = await chrome.storage.local.get('cachedProfile');
+  return result.cachedProfile ?? null;
+}
+
+export async function setCachedProfile(profile: UserProfile): Promise<void> {
+  await chrome.storage.local.set({ cachedProfile: profile });
+}
